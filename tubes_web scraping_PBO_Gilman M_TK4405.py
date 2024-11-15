@@ -16,7 +16,7 @@ def scrape():
     print('\n')
     prd = input("Produk yang ingin dicari: ")
     p_jml = int(input('Jumlah halaman yang ingin diambil: '))
-    url = f"https://www.ebay.com/sch/i.html?_from=R40&_nkw={prd}&_sacat=0&_pgn="
+    url = f"https://www.ebay.com/sch/i.html?_from=R40&_trksid=p4432023.m570.l1313&_nkw={prd}&_sacat=0"
     p_total = 0
     p_idx = 0
     idx = -1
@@ -28,22 +28,25 @@ def scrape():
         items = soup.find_all('div', 's-item__info clearfix')
         for details in items:
             idx += 1
-            name = details.find('h3', class_='s-item__title').text
-            pname = str(name).encode("ascii", "ignore")
-            price = details.find('div', class_='s-item__detail s-item__detail--primary').text.replace(' ','').replace('IDR','').replace('.','').replace(',','').replace('to','')
-            prc = str(price[:-2])
-            if idx != 0:
+            name_element = details.find('div', class_='s-item__title')
+            if name_element:  # Hanya proses jika elemen ditemukan
+                name = name_element.text
+                pname = str(name).encode("ascii", "ignore")
+                price_element = details.find('span', class_='s-item__price')
+                if price_element:  # Cek juga apakah elemen harga ditemukan
+                    price = price_element.text.replace(' ', '').replace('IDR', '').replace('$', '').replace('.', '').replace(',', '').replace('to', '')
+                    prc = str(price[:-2])
                     if len(prc) < 9:
                         prce = int(prc)
                         pnamed = pname.decode()
-                        p_total = (p_total + prce)
+                        p_total += prce
                         data.append([pnamed, prce])
-                        harga.append(int(prc))
+                        harga.append(prce)
     print('\nscraping berhasil!')
 
     #menyimpan data
     table_header = ['Product Name','Price']
-    writer = csv.writer(open(f'C:/Users/Lenovo/PBO/shopping_Ebay_({prd}).csv','w',newline='',encoding="utf-8"))
+    writer = csv.writer(open(f'C:/python/tubes pbo webscraping/shopping_Ebay_({prd}).csv','w',newline='',encoding="utf-8"))
     writer.writerow(table_header)
     for dx in data:
         writer.writerow(dx)        
