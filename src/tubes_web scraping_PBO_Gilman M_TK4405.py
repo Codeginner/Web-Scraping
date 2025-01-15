@@ -134,8 +134,8 @@ def show_chart():
     plt.show()
 
 def tampil_menu():
-    print('\nMenu:')
-    print('1. Mulai Scraping (PS5)\n2. Tampilkan Chart (Lakukan scraping terlebih dahulu!)')
+    print('\nMenu: ')
+    print('1. Mulai Scraping\n2. Tampilkan Chart (Lakukan scraping terlebih dahulu!)')
     print('3. Tampilkan distribusi harga tertinggi dan terendah barang')
     print('4. Tampilkan isi file csv(Lakukan scraping terlebih dahulu!)\n5. Tampilkan Pengolahan Data(Lakukan scraping terlebih dahulu!')
     print('6. Buat Database\n7. Tampilkan Database Hasil Scraping')
@@ -200,7 +200,7 @@ def tampil_db():
 #main program
 def menu():
     tampil_menu()
-    a = input('Masukkan pilihan: ')
+    a = input('Masukkan pilihan (isi dengan angka 1/2/3... sesuai menu): ')
     if a == '1':
         scrape()
         tampil_hasil_scraping()
