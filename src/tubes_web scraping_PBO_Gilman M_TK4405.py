@@ -55,8 +55,6 @@ def scrape():
     #menghitung rata-rata harga barang
     
 
-    
-
 def show_highest_lowest_pie_chart():
     if not harga:
         print("Data harga belum tersedia. Lakukan scraping terlebih dahulu.")
@@ -91,6 +89,25 @@ def show_highest_lowest_pie_chart():
     plt.axis('equal')  # Menjaga pie chart menjadi lingkaran
     plt.show()
 
+def price_boxplot():
+    # Create the boxplot
+    plt.figure(figsize=(10, 6))
+    plt.boxplot(harga, vert=False, patch_artist=True, notch=True, 
+                boxprops=dict(facecolor="skyblue", color="blue"),
+                medianprops=dict(color="red", linewidth=2),
+                whiskerprops=dict(color="blue", linewidth=1.5),
+                capprops=dict(color="blue", linewidth=1.5),
+                flierprops=dict(marker='o', color='black', alpha=0.5))
+
+    # Add labels and title
+    plt.title(f"{prd} Prices from eBay", fontsize=14)
+    plt.xlabel("Price (in IDR)", fontsize=12)
+    plt.yticks([1], ["Prices"])
+
+    # Show the plot
+    plt.grid(axis='x', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()
 
 def tampil_hasil_scraping():
     yt = input('\nTampilkan hasil scraping?(y/t): ')
@@ -138,8 +155,8 @@ def tampil_menu():
     print('1. Mulai Scraping\n2. Tampilkan Chart (Lakukan scraping terlebih dahulu!)')
     print('3. Tampilkan distribusi harga tertinggi dan terendah barang')
     print('4. Tampilkan isi file csv(Lakukan scraping terlebih dahulu!)\n5. Tampilkan Pengolahan Data(Lakukan scraping terlebih dahulu!')
-    print('6. Buat Database\n7. Tampilkan Database Hasil Scraping')
-    print('8. Exit Program')
+    print('6. Buat Database (jika ingin memproses data lebih lanjut)\n7. Tampilkan Database Hasil Scraping')
+    print('8. Hapus data barang\n9. Exit Program')
 
 def kembali_ke_menu():
     cmd = input('\nKembali ke menu?(y/t): ')
@@ -191,11 +208,42 @@ def tampil_db():
     try:
         cursor.execute(f"SELECT * FROM {db_table_name}")
     except:
-        db_table_name=input("Masukkan nama tabel: ")
-        cursor.execute(f"SELECT * FROM {db_table_name}")
-    data1 = cursor.fetchall()
+        try:
+            db_table_name=input("Masukkan nama tabel: ")
+            cursor.execute(f"SELECT * FROM {db_table_name}")
+            data1 = cursor.fetchall()
+        except:
+            print("\ntable not found!")
+            kembali_ke_menu()
     for row in data1:
         print(row)
+
+def delete_row_on_db():
+    global db_table_name1
+    db_table_name1 = input("Masukkan nama tabel: ")
+    prdname = input("Masukkan nama data barang yang ingin dihapus: ")
+    cursor.execute(f"DELETE FROM {db_table_name1} WHERE nama_brg = '{prdname}'")
+    db.commit()
+
+    see_table = input(f"Apakah anda ingin melihat tabel {db_table_name1}(y/t)? ")
+    if see_table == 'y' or see_table == 'Y':
+            try:
+                #db_table_name1=input("Masukkan nama tabel: ")
+                cursor.execute(f"SELECT * FROM {db_table_name1}")
+                data1 = cursor.fetchall()
+                for row in data1:
+                    print(row)
+            except:
+                #db_table_name1=input("Masukkan nama tabel: ")
+                cursor.execute(f"SELECT * FROM {db_table_name1}")
+                data1 = cursor.fetchall()
+                for row in data1:
+                    print(row)
+    else: 
+        menu()
+
+def sort_data():
+    pass 
 
 #main program
 def menu():
@@ -214,7 +262,7 @@ def menu():
             print('\nTerdapat sebuah kesalahan, mungkin anda belum melakukan scraping! ingin kembali ke menu?')
             kembali_ke_menu()
     elif a == '3':
-        show_highest_lowest_pie_chart()
+        price_boxplot()
         kembali_ke_menu()
     elif a == '4':
         read_data()
@@ -231,6 +279,9 @@ def menu():
         tampil_db()
         kembali_ke_menu()
     elif a == '8':
+        delete_row_on_db()
+        kembali_ke_menu()
+    elif a == '9':
         print('Terima kasih!')
     else:
         print('silakan masukkan input yang benar!')
