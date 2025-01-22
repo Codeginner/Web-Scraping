@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from tabulate import tabulate
 import statistics
 import mysql.connector as mysql
+import pandas as pd
 
 data = []
 harga = []
@@ -90,29 +91,34 @@ def show_highest_lowest_pie_chart():
     plt.show()
 
 def price_boxplot():
-    # Create the boxplot
-    plt.figure(figsize=(10, 6))
-    plt.boxplot(harga, vert=False, patch_artist=True, notch=True, 
-                boxprops=dict(facecolor="skyblue", color="blue"),
-                medianprops=dict(color="red", linewidth=2),
-                whiskerprops=dict(color="blue", linewidth=1.5),
-                capprops=dict(color="blue", linewidth=1.5),
-                flierprops=dict(marker='o', color='black', alpha=0.5))
+    try:
+        # Create the boxplot
+        plt.figure(figsize=(10, 6))
+        plt.boxplot(harga, vert=False, patch_artist=True, notch=True, 
+                    boxprops=dict(facecolor="skyblue", color="blue"),
+                    medianprops=dict(color="red", linewidth=2),
+                    whiskerprops=dict(color="blue", linewidth=1.5),
+                    capprops=dict(color="blue", linewidth=1.5),
+                    flierprops=dict(marker='o', color='black', alpha=0.5))
 
-    # Add labels and title
-    plt.title(f"{prd} Prices from eBay", fontsize=14)
-    plt.xlabel("Price (in IDR)", fontsize=12)
-    plt.yticks([1], ["Prices"])
+        # Add labels and title
+        plt.title(f"{prd} Prices from eBay", fontsize=14)
+        plt.xlabel("Price (in IDR)", fontsize=12)
+        plt.yticks([1], ["Prices"])
 
-    # Show the plot
-    plt.grid(axis='x', linestyle='--', alpha=0.7)
-    plt.tight_layout()
-    plt.show()
+        # Show the plot
+        plt.grid(axis='x', linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.show()
+    
+    except:
+        print("Lakukan scraping terlebih dahulu")
 
 def tampil_hasil_scraping():
     yt = input('\nTampilkan hasil scraping?(y/t): ')
     if yt == 'y' or yt == 'Y':
-        print(tabulate(data,headers=['Nama produk','Harga'],tablefmt='fancy_grid'))
+        data_with_index = [(i + 1, *item) for i, item in enumerate(data)]
+        print(tabulate(data_with_index, headers=['No', 'Nama produk', 'Harga'], tablefmt='fancy_grid'))
     else:
         kembali_ke_menu()
 
@@ -132,31 +138,42 @@ def read_data():
         print(a)
     print(f'\n(diatas merupakan isi file shopping_Ebay_({prd}).csv)')
 
-def show_chart():
-    #proses visualisasi data
-    p_mean = round(p_total/idx)
-    aboveavg = 0
-    belowavg = 0
-    for i in data:
-        if i[1] > p_mean: 
-            aboveavg+=1
-        elif i[1] <= p_mean:
-            belowavg+=1
-    p_avg = [aboveavg,belowavg]
-    y = np.array(p_avg)
-    label = [f"harga diatas rata-rata", f"harga dibawah rata-rata harga"]
-    exp = [0,0]
-    plt.title(f'Persentase Harga {prd}\n(Harga rata-rata {prd}: {p_mean})')
-    plt.pie(y, labels = label, explode=exp, autopct=lambda p:f'{p:.2f}%\n({p*sum(p_avg)/100 :.0f} buah)')
-    plt.show()
+def show_chart(): #pie chart
+    try:
+        try:
+            prdn = input("Masukkan nama barang: ")
+            data = pd.read_csv(f"C:/python/tubes pbo webscraping/shopping_Ebay_({prdn}).csv")
+            p_mean = round(data['Price'].mean())
+            above_avg = sum(data['Price'] > p_mean)
+            below_avg = sum(data['Price'] <= p_mean)
+            p_avg = [above_avg, below_avg]
+            y = np.array(p_avg)
+            label = [f"harga diatas rata-rata", f"harga dibawah rata-rata harga"]
+            exp = [0,0]
+            plt.title(f'Persentase Harga {prdn}\n(Harga rata-rata {prdn}: {p_mean})')
+            plt.pie(y, labels = label, explode=exp, autopct=lambda p:f'{p:.2f}%\n({p*sum(p_avg)/100 :.0f} buah)')
+            plt.show()
+        
+        except:
+            print("Data not found")
 
-def tampil_menu():
-    print('\nMenu: ')
-    print('1. Mulai Scraping\n2. Tampilkan Chart (Lakukan scraping terlebih dahulu!)')
-    print('3. Tampilkan distribusi harga tertinggi dan terendah barang')
-    print('4. Tampilkan isi file csv(Lakukan scraping terlebih dahulu!)\n5. Tampilkan Pengolahan Data(Lakukan scraping terlebih dahulu!')
-    print('6. Buat Database (jika ingin memproses data lebih lanjut)\n7. Tampilkan Database Hasil Scraping')
-    print('8. Hapus data barang\n9. Exit Program')
+    except:
+        #proses visualisasi data
+        p_mean = round(p_total/idx)
+        aboveavg = 0
+        belowavg = 0
+        for i in data:
+            if i[1] > p_mean: 
+                aboveavg+=1
+            elif i[1] <= p_mean:
+                belowavg+=1
+        p_avg = [aboveavg,belowavg]
+        y = np.array(p_avg)
+        label = [f"harga diatas rata-rata", f"harga dibawah rata-rata harga"]
+        exp = [0,0]
+        plt.title(f'Persentase Harga {prd}\n(Harga rata-rata {prd}: {p_mean})')
+        plt.pie(y, labels = label, explode=exp, autopct=lambda p:f'{p:.2f}%\n({p*sum(p_avg)/100 :.0f} buah)')
+        plt.show()        
 
 def kembali_ke_menu():
     cmd = input('\nKembali ke menu?(y/t): ')
@@ -204,19 +221,37 @@ def buat_tabel_db():
         db.rollback()
 
 
-def tampil_db():
+def tampil_tabel_brg():
     try:
         cursor.execute(f"SELECT * FROM {db_table_name}")
     except:
         try:
-            db_table_name=input("Masukkan nama tabel: ")
+            cursor.execute("SHOW TABLES")
+            print("\nDaftar tabel dalam database:")
+            for table in cursor.fetchall():
+                print(f"- {table[0]}")
+            db_table_name=input("\nMasukkan nama tabel: ")
             cursor.execute(f"SELECT * FROM {db_table_name}")
             data1 = cursor.fetchall()
         except:
             print("\ntable not found!")
             kembali_ke_menu()
-    for row in data1:
-        print(row)
+    try:
+        for row in data1:
+            print(row)
+    except:
+        kembali_ke_menu()
+
+def tampil_tabel_db():
+    try:
+        cursor.execute("SHOW TABLES")
+        print("\nDaftar tabel dalam database: ")
+        for table in cursor.fetchall():
+            print(f"- {table[0]}")
+    
+    except mysql.connector.Error as e:
+        print(f"Error: {e}")
+        kembali_ke_menu()
 
 def delete_row_on_db():
     global db_table_name1
@@ -233,6 +268,7 @@ def delete_row_on_db():
                 data1 = cursor.fetchall()
                 for row in data1:
                     print(row)
+
             except:
                 #db_table_name1=input("Masukkan nama tabel: ")
                 cursor.execute(f"SELECT * FROM {db_table_name1}")
@@ -242,8 +278,14 @@ def delete_row_on_db():
     else: 
         menu()
 
-def sort_data():
-    pass 
+def tampil_menu():
+    print('\nMenu: ')
+    print('1. Mulai Scraping\n2. Tampilkan Chart (Masukkan nama barang sesuai keyword scraping)')
+    print('3. Tampilkan distribusi harga tertinggi dan terendah barang')
+    print('4. Tampilkan isi file csv (Lakukan scraping terlebih dahulu!)\n5. Tampilkan Pengolahan Data (Lakukan scraping terlebih dahulu!')
+    print('6. Buat Database (jika ingin memproses data lebih lanjut)\n7. Tampilkan tabel data barang')
+    print('8. Tampilkan database')
+    print('9. Hapus data barang\n10. Exit Program')
 
 #main program
 def menu():
@@ -254,13 +296,8 @@ def menu():
         tampil_hasil_scraping()
         kembali_ke_menu()
     elif a == '2':
-        try:
-            show_chart()
-            print('\nChart telah ditampilkan')
-            kembali_ke_menu()
-        except:
-            print('\nTerdapat sebuah kesalahan, mungkin anda belum melakukan scraping! ingin kembali ke menu?')
-            kembali_ke_menu()
+        show_chart()
+        kembali_ke_menu()
     elif a == '3':
         price_boxplot()
         kembali_ke_menu()
@@ -276,12 +313,15 @@ def menu():
         print('kembali ke menu jika ingin tampilkan database!')
         kembali_ke_menu()
     elif a == '7':
-        tampil_db()
+        tampil_tabel_brg()
         kembali_ke_menu()
     elif a == '8':
-        delete_row_on_db()
+        tampil_tabel_db()
         kembali_ke_menu()
     elif a == '9':
+        delete_row_on_db()
+        kembali_ke_menu()
+    elif a == '10':
         print('Terima kasih!')
     else:
         print('silakan masukkan input yang benar!')
