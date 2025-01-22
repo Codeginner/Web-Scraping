@@ -46,7 +46,7 @@ def scrape():
 
     #menyimpan data
     table_header = ['Product Name','Price']
-    writer = csv.writer(open(f'C:/python/tubes pbo webscraping/shopping_Ebay_({prd}).csv','w',newline='',encoding="utf-8"))
+    writer = csv.writer(open(f'C:/python/tubes pbo webscraping/datasets/shopping_Ebay_({prd}).csv','w',newline='',encoding="utf-8"))
     writer.writerow(table_header)
     for dx in data:
         writer.writerow(dx)        
@@ -133,16 +133,16 @@ def tampil_pengolahan_data():
 def read_data():
     print('\n')
     print('\nIsi data terbaru yang diambil adalah sebagai berikut:\n')
-    with open(f"C:/python/tubes pbo webscraping/shopping_Ebay_({prd}).csv","r") as f:
+    with open(f"C:/python/tubes pbo webscraping/datasets/shopping_Ebay_({prd}).csv","r") as f:
         a = f.read()
         print(a)
-    print(f'\n(diatas merupakan isi file shopping_Ebay_({prd}).csv)')
+    print(f'\n(di atas merupakan isi file shopping_Ebay_({prd}).csv)')
 
 def show_chart(): #pie chart
     try:
         try:
             prdn = input("Masukkan nama barang: ")
-            data = pd.read_csv(f"C:/python/tubes pbo webscraping/shopping_Ebay_({prdn}).csv")
+            data = pd.read_csv(f"C:/python/tubes pbo webscraping/datasets/shopping_Ebay_({prdn}).csv")
             p_mean = round(data['Price'].mean())
             above_avg = sum(data['Price'] > p_mean)
             below_avg = sum(data['Price'] <= p_mean)
@@ -186,14 +186,19 @@ def thx():
     print('terima kasih')
 
 #database
-db = mysql.connect(
-        host = "localhost",
-        user = "root",
-        password = ""
-    )
+try:
+    db = mysql.connect(
+            host = "localhost",
+            user = "root",
+            password = ""
+        )
+        
+    cursor = db.cursor()
+    db.database = "pbo_scraping_databrg"
 
-cursor = db.cursor()
-db.database = "pbo_scraping_databrg"
+except:
+    print("Terjadi kesalahan")
+
 
 def buat_tabel_db():
     global db_table_name
@@ -326,5 +331,5 @@ def menu():
     else:
         print('silakan masukkan input yang benar!')
         menu()
-
+        
 menu()
