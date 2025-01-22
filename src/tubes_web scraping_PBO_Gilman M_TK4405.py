@@ -185,12 +185,12 @@ def kembali_ke_menu():
 def thx():
     print('terima kasih')
 
-#database
+#database (customize with your database connection)
 try:
     db = mysql.connect(
-            host = "localhost",
-            user = "root",
-            password = ""
+            host = "host",
+            user = "username",
+            password = "yourpassword"
         )
         
     cursor = db.cursor()
